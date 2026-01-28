@@ -9,33 +9,33 @@ export default function Sidebar() {
       <h2 className="text-2xl font-bold mb-6 text-white">
         Admin Panel
       </h2>
-       
+
       <div className="space-y-2">
 
-        <div className=" text-black bg-amber-50">
-        <NavLink to="/admin " end className={linkClass}>
-          Dashboard
-        </NavLink>
-         </div>
- 
-         <div className=" text-black bg-amber-50">
-        <NavLink to="/admin/books" className={linkClass}>
-          Books
-        </NavLink>
+        <div className="text-black bg-amber-50">
+          
+          <NavLink to="" end className={linkClass}>
+            Dashboard
+          </NavLink>
         </div>
 
-         <div className=" text-black bg-amber-50">
-        <NavLink to="/admin/users"className={linkClass}>   Users List
-        
-        </NavLink>
+        <div className="text-black bg-amber-50">
+          <NavLink to="books" className={linkClass}>
+            Books
+          </NavLink>
         </div>
-          <div className=" text-black bg-amber-50">
-        <NavLink to="/admin/payments"className={linkClass}>   Payment History
-        
-        </NavLink>
+
+        <div className="text-black bg-amber-50">
+          <NavLink to="users" className={linkClass}>
+            Users List
+          </NavLink>
         </div>
-        
-        
+
+        <div className="text-black bg-amber-50">
+          <NavLink to="payments" className={linkClass}>
+            Payment History
+          </NavLink>
+        </div>
 
       </div>
     </div>

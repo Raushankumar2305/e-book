@@ -28,10 +28,18 @@ if not PUBLIC_DIR.exists():
     os.makedirs(PUBLIC_DIR)
 
 
+# origins = [
+#     "http://localhost:5173",
+#     "http://127.0.0.1:5173",
+# ]
+
 origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
+    "http://localhost:5173",  # user side
+    "http://localhost:5174",  # admin side
 ]
+
+
+
 
 app.add_middleware(
     CORSMiddleware,

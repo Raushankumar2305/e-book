@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 const API = "http://127.0.0.1:8000/auth";
 
-const OtpVerifyPage = () => {
+const OtpVerify = () => {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -14,7 +14,7 @@ const OtpVerifyPage = () => {
 
   const inputsRef = useRef([]);
 
-  /* ================= TIMER ================= */
+//   timer
   useEffect(() => {
     if (timer === 0) return;
 
@@ -25,7 +25,7 @@ const OtpVerifyPage = () => {
     return () => clearInterval(interval);
   }, [timer]);
 
-  /* */
+  
   const handleOtpChange = (value, index) => {
     if (!/^\d?$/.test(value)) return;
 
@@ -37,74 +37,37 @@ const OtpVerifyPage = () => {
       inputsRef.current[index + 1]?.focus();
     }
   };
- 
-/* otp verify */
-const handleVerify = async () => {
-  const otpValue = otp.join("");
 
-  if (!email) return alert("Enter email");
-  if (otpValue.length !== 6) return alert("Enter 6 digit OTP");
+  /* verify otp */
+  const handleVerify = async () => {
+    const otpValue = otp.join("");
 
-  try {
-    setLoading(true);
+    if (!email) return alert("Enter email");
+    if (otpValue.length !== 6) return alert("Enter 6 digit OTP");
 
-    const res = await axios.post(`${API}/otp-verify`, {
-      email,
-      otp: otpValue,
-    });
+    try {
+      setLoading(true);
 
-    const { access_token, role } = res.data;
+      const res = await axios.post(`${API}/otp-verify`, {
+        email,
+        otp: otpValue,
+      });
 
-    // ✅ save token + role
-    localStorage.setItem("token", access_token);
-    localStorage.setItem("role", role);
+      const { access_token, role } = res.data;
 
-    console.log("Logged in role:", role); // debug (optional)
+      /* token store
+      */
+      window.location.href =
+        `http://localhost:5174/admin?token=${access_token}&role=${role}`;
 
-    // ✅ role-based redirect
-    switch (role) {
-      case "admin":
-        navigate("/admin");
-        break;
-
-      case "vendor":
-        navigate("/vendor");
-        break;
-
-      case "author":
-        navigate("/author");
-        break;
-
-      default:
-        navigate("/homepage");
+    } catch (err) {
+      alert(err.response?.data?.detail || "Invalid or expired OTP");
+    } finally {
+      setLoading(false);
     }
+  };
 
-  } catch (err) {
-    alert(err.response?.data?.detail || "Invalid or expired OTP");
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  /* re-send otp */
+  /* resend otp*/
   const handleResend = async () => {
     if (timer > 0) return;
 
@@ -128,12 +91,11 @@ const handleVerify = async () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="bg-white shadow-xl rounded-2xl w-full max-w-md p-8">
-
         <h2 className="text-2xl font-bold text-center mb-6">
           OTP Verification
         </h2>
 
-        
+        {/* EMAIL */}
         <input
           type="email"
           placeholder="Enter your email"
@@ -142,7 +104,7 @@ const handleVerify = async () => {
           className="w-full mb-6 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
         />
 
-        
+        {/* OTP BOXES */}
         <div className="flex justify-between mb-6">
           {otp.map((digit, i) => (
             <input
@@ -157,7 +119,7 @@ const handleVerify = async () => {
           ))}
         </div>
 
-        
+        {/* TIMER */}
         <div className="text-center mb-6 text-sm">
           {timer > 0 ? (
             <p className="text-gray-500">
@@ -173,7 +135,7 @@ const handleVerify = async () => {
           )}
         </div>
 
-        
+        {/* VERIFY BUTTON */}
         <button
           onClick={handleVerify}
           disabled={loading}
@@ -186,4 +148,4 @@ const handleVerify = async () => {
   );
 };
 
-export default OtpVerifyPage;
+export default OtpVerify;

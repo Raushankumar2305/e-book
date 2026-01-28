@@ -2,6 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime
 
+
+from models.books import Book
+from fastapi import Form
+
+
+
 from auth import hash_password, verify_password
 from otp import generate_otp, otp_expiry_time, create_token
 
@@ -15,14 +21,14 @@ from Schema.user import (
     UserResponse,
 )
 
-from auth import require_role   # ⭐ NEW
+from auth import require_role   
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-# =====================================================
+
 # REGISTER (normal user only)
-# =====================================================
+
 @router.post("/register")
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
 
@@ -43,32 +49,64 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     return {"message": "User registered successfully"}
 
 
-# =====================================================
-# LOGIN (password → OTP)
-# =====================================================
+
+# LOGIN 
+
 @router.post("/login")
 def login(data: LoginSchema, db: Session = Depends(get_db)):
 
+    print(" Login request received for:", data.email)
+
     user = db.query(User).filter(User.email == data.email).first()
 
-    if not user or not verify_password(data.password, user.password):
-        raise HTTPException(401, "Invalid credentials")
+    # Step 1  check user exists
+    if not user:
+        print(" User not found")
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
+    print(" User found in DB:", user.email)
+
+
+    # Step 2  check password
+    is_valid = verify_password(data.password, user.password)
+    print(" Password match:", is_valid)
+
+    if not is_valid:
+        print(" Wrong password")
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+
+    # Step 3  generate otp
     otp = generate_otp()
-    user.otp = otp
-    user.otp_expiry = otp_expiry_time()
+    expiry = otp_expiry_time()
 
-    db.commit()
+    print(" Generated OTP:", otp)
+    print(" Expiry:", expiry)
+
+
+    # Step 4  save to DB
+    user.otp = otp
+    user.otp_expiry = expiry
+
+    try:
+        db.commit()
+        print(" OTP saved successfully")
+    except Exception as e:
+        db.rollback()
+        print(" DB Commit failed:", e)
+        raise HTTPException(status_code=500, detail="Database error")
+
 
     return {
         "message": "OTP sent",
-        "otp": otp   # ⚠ remove in production
+        "otp": otp   
     }
 
 
-# =====================================================
-# OTP VERIFY (FINAL LOGIN)
-# =====================================================
+
+
+# OTP VERIFY 
+
 @router.post("/otp-verify")
 def otp_verify(data: OTPVerify, db: Session = Depends(get_db)):
 
@@ -86,7 +124,7 @@ def otp_verify(data: OTPVerify, db: Session = Depends(get_db)):
 
     token = create_token({
         "user_id": user.id,
-        "role": user.role      # ⭐ include role
+        "role": user.role      
     })
 
     db.commit()
@@ -99,9 +137,9 @@ def otp_verify(data: OTPVerify, db: Session = Depends(get_db)):
     }
 
 
-# =====================================================
+
 # RESEND OTP
-# =====================================================
+
 @router.post("/resend-otp")
 def resend_otp(data: OTPVerify, db: Session = Depends(get_db)):
 
@@ -121,17 +159,15 @@ def resend_otp(data: OTPVerify, db: Session = Depends(get_db)):
         "otp": otp
     }
 
+#admin related apis
 
-# =====================================================
-# ADMIN ONLY USER MANAGEMENT
-# =====================================================
+#  create vendor/author
 
-# ⭐ Only ADMIN can create vendor/author
 @router.post("/users", response_model=UserResponse)
 def create_user(
     user: UserCreate,
     db: Session = Depends(get_db),
-    admin=Depends(require_role(["admin"]))   # ⭐ PROTECTED
+    admin=Depends(require_role(["admin"]))   #  PROTECTED
 ):
 
     if db.query(User).filter(User.email == user.email).first():
@@ -152,13 +188,50 @@ def create_user(
     return new_user
 
 
-# ⭐ ADMIN ONLY view all users
+# #  ADMIN ONLY view all users
+# @router.get("/users", response_model=list[UserResponse])
+# def get_users(
+#     db: Session = Depends(get_db),
+#     admin=Depends(require_role(["admin"]))
+# ):
+#     return db.query(User).all()
+
+
 @router.get("/users", response_model=list[UserResponse])
 def get_users(
     db: Session = Depends(get_db),
     admin=Depends(require_role(["admin"]))
 ):
-    return db.query(User).all()
+    print("\n==========  GET ALL USERS (ADMIN) ==========")
+
+    # Step 1 request ok
+    print(" Request received")
+
+    # Step 2  confirm admin 
+    print(" Current user:", admin.email)
+    print(" Role:", admin.role)
+
+    try:
+        # Step 3 show users
+        users = db.query(User).all()
+
+        print(" Users fetched from DB:", len(users))
+
+        if not users:
+            print(" No users found in database")
+
+        # Step 4 printuser
+        for u in users[:3]:
+            print(" u.email ", u.email, "| role:", u.role)
+
+        print(" Returning users list")
+
+        return users
+
+    except Exception as e:
+        print(" Database error:", str(e))
+        raise HTTPException(status_code=500, detail="Database error")
+
 
 
 
@@ -205,3 +278,67 @@ def delete_user(
     db.commit()
 
     return {"message": "User deleted successfully"}
+
+
+
+
+
+# vendor apis
+
+@router.post("/vendor/add-author")
+def vendor_add_author(
+    name: str,
+    email: str,
+    password: str,
+    db: Session = Depends(get_db),
+    vendor=Depends(require_role(["vendor"]))
+):
+    if db.query(User).filter(User.email == email).first():
+        raise HTTPException(400, "Email already exists")
+
+    new_author = User(
+        name=name,
+        email=email,
+        password=hash_password(password),
+        role="author",
+        is_verified=True
+    )
+
+    db.add(new_author)
+    db.commit()
+
+    return {"message": "Author created successfully"}
+
+
+#  Vendor = add book 
+@router.post("/vendor/add-book")
+def vendor_add_book(
+    title: str = Form(...),
+    price: float = Form(...),
+    quantity: int = Form(...),
+    author_id: int = Form(...),
+    db: Session = Depends(get_db),
+    vendor=Depends(require_role(["vendor"]))
+):
+
+    author = db.query(User).filter(
+        User.id == author_id,
+        User.role == "author"
+    ).first()
+
+    if not author:
+        raise HTTPException(404, "Invalid author")
+
+    book = Book(
+        title=title,
+        author="",
+        price=price,
+        quantity=quantity,
+        vendor_id=vendor.id,
+        author_id=author_id
+    )
+
+    db.add(book)
+    db.commit()
+
+    return {"message": "Book added successfully"}

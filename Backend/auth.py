@@ -16,7 +16,7 @@ ALGORITHM = "HS256"
 security = HTTPBearer()
 
 
-# ================= PASSWORD =================
+
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
@@ -25,7 +25,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
-# ================= CURRENT USER =================
+# current user
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db)
@@ -47,7 +47,7 @@ def get_current_user(
         raise HTTPException(401, "Invalid token")
 
 
-# ================= ROLE CHECK =================
+
 def require_role(roles: list):
     def checker(current_user=Depends(get_current_user)):
         if current_user.role not in roles:

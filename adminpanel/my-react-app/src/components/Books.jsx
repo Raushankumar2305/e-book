@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import api from "../api";
 
-const API_URL = "http://localhost:8000";
+const API_BASE = "http://localhost:8000";
 
 const Books = () => {
-  const navigate = useNavigate();
-
   const [books, setBooks] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
@@ -17,25 +14,43 @@ const Books = () => {
   const [quantity, setQuantity] = useState("");
 
   const [image, setImage] = useState(null);
-  const [pdf, setPdf] = useState(null); 
+  const [pdf, setPdf] = useState(null);
 
   const [editId, setEditId] = useState(null);
 
   
-  // get
-  const fetchBooks = async () => {
-    const res = await axios.get(`${API_URL}/books`);
-    setBooks(res.data);
-  };
-
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    // no token = login
+    if (!token) {
+      window.location.href = "http://localhost:5173/auth/login";
+      return;
+    }
+
+    // only admin + vendor allowed
+    if (role !== "admin" && role !== "vendor") {
+      alert("Unauthorized");
+      window.location.href = "/";
+      return;
+    }
+
     fetchBooks();
   }, []);
-
-  //add
+// get boks
+  const fetchBooks = async () => {
+    try {
+      const res = await api.get("/books");
+      setBooks(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Fetch books error:", err);
+    }
+  };
+// save books and add/update ok
   const handleSaveBook = async () => {
     if (!title || !author || !price || !quantity) {
-      alert("All fields are required");
+      alert("All fields required");
       return;
     }
 
@@ -50,23 +65,18 @@ const Books = () => {
 
     try {
       if (editId) {
-        await axios.put(`${API_URL}/books/${editId}`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        await api.put(`/books/${editId}`, formData);
       } else {
-        await axios.post(`${API_URL}/books`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        await api.post("/books", formData);
       }
 
       closeModal();
       fetchBooks();
     } catch (err) {
-      alert("Failed to save book");
       console.error(err);
+      alert("Failed to save book");
     }
   };
-
 // edit
   const handleEdit = (book) => {
     setEditId(book.id);
@@ -74,21 +84,23 @@ const Books = () => {
     setAuthor(book.author);
     setPrice(book.price);
     setQuantity(book.quantity);
-    setImage(null);
-    setPdf(null);
     setShowModal(true);
   };
-
-  // delete
+//  delete
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this book?")) return;
-    await axios.delete(`${API_URL}/books/${id}`);
-    fetchBooks();
+
+    try {
+      await api.delete(`/books/${id}`);
+      fetchBooks();
+    } catch (err) {
+      console.error(err);
+      alert("Delete failed");
+    }
   };
 
-  // pdf
   const handleViewPdf = (pdfPath) => {
-    window.open(`${API_URL}/public/${pdfPath}`, "_blank");
+    window.open(`${API_BASE}/public/${pdfPath}`, "_blank");
   };
 
   const closeModal = () => {
@@ -104,7 +116,7 @@ const Books = () => {
 
   return (
     <div className="p-6">
-      {/* HEADER */}
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">Books</h1>
 
@@ -116,7 +128,6 @@ const Books = () => {
         </button>
       </div>
 
-      {/* TABLE */}
       <div className="bg-white rounded shadow overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-gray-100">
@@ -135,7 +146,7 @@ const Books = () => {
           <tbody>
             {books.map((book) => {
               const imageUrl = book.image
-                ? `${API_URL}/public/${book.image}`
+                ? `${API_BASE}/public/${book.image}`
                 : null;
 
               return (
@@ -150,7 +161,6 @@ const Books = () => {
                     {imageUrl ? (
                       <img
                         src={imageUrl}
-                        alt={book.title}
                         className="w-14 h-20 object-cover rounded cursor-pointer"
                         onClick={() => setPreviewImage(imageUrl)}
                       />
@@ -190,103 +200,16 @@ const Books = () => {
                 </tr>
               );
             })}
-
-            {books.length === 0 && (
-              <tr>
-                <td colSpan="8" className="p-6 text-center text-gray-500">
-                  No books found
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
       </div>
 
-      {/* MODAL */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-40">
-          <div className="bg-white w-96 p-6 rounded-lg">
-            <h2 className="text-xl font-semibold mb-4">
-              {editId ? "Edit Book" : "Add New Book"}
-            </h2>
-
-            <input
-              type="text"
-              placeholder="Book Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full border p-2 rounded mb-3"
-            />
-
-            <input
-              type="text"
-              placeholder="Author Name"
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              className="w-full border p-2 rounded mb-3"
-            />
-
-            <input
-              type="number"
-              placeholder="Price"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              className="w-full border p-2 rounded mb-3"
-            />
-
-            <input
-              type="number"
-              placeholder=" Quantity"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              className="w-full border p-2 rounded mb-3"
-            />
-
-            <input
-              type="file"
-              placeholder="Select image"
-              accept="image/*"
-              onChange={(e) => setImage(e.target.files[0])}
-              className="w-full border p-2 rounded mb-3"
-            />
-
-            <input
-              type="file"
-              placeholder="Select PDF"
-              accept="application/pdf"
-              onChange={(e) => setPdf(e.target.files[0])}
-              className="w-full border p-2 rounded mb-4"
-            />
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={closeModal}
-                className="px-4 py-2 border rounded hover:bg-red-500 hover:text-white"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveBook}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-800"
-              >
-                {editId ? "Update" : "Add"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* IMAGE PREVIEW */}
       {previewImage && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center"
           onClick={() => setPreviewImage(null)}
         >
-          <img
-            src={previewImage}
-            alt="Preview"
-            className="max-h-[90vh] max-w-[90vw] rounded"
-          />
+          <img src={previewImage} className="max-h-[90vh]" />
         </div>
       )}
     </div>

@@ -12,6 +12,7 @@ from reportlab.pdfgen import canvas
 from database import get_db
 from models.books import Book
 from Schema.books import BookResponse
+from auth import require_role   
 
 router = APIRouter(prefix="/books", tags=["Books"])
 
@@ -20,6 +21,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 BOOKS_DIR = BASE_DIR / "public" / "uploads" / "books"
 BOOKS_DIR.mkdir(parents=True, exist_ok=True)
 
+
+
+# create books admin and vendor only
 
 @router.post("/", response_model=BookResponse)
 def create_book(
@@ -30,6 +34,7 @@ def create_book(
     image: UploadFile = File(None),
     pdf: UploadFile = File(None),
     db: Session = Depends(get_db),
+    user=Depends(require_role(["admin", "vendor"]))  
 ):
     book_uuid = str(uuid.uuid4())
     book_dir = BOOKS_DIR / book_uuid
@@ -38,7 +43,6 @@ def create_book(
     image_path = None
     pdf_path = None
 
-    
     if image:
         image_ext = image.filename.split(".")[-1]
         image_name = f"image.{image_ext}"
@@ -48,7 +52,6 @@ def create_book(
             shutil.copyfileobj(image.file, buffer)
 
         image_path = f"uploads/books/{book_uuid}/{image_name}"
-
 
     if pdf:
         pdf_name = "book.pdf"
@@ -82,6 +85,8 @@ def get_books(db: Session = Depends(get_db)):
 
 
 
+# update only admin and vendor
+
 @router.put("/{id}", response_model=BookResponse)
 def update_book(
     id: int,
@@ -92,6 +97,7 @@ def update_book(
     image: UploadFile = File(None),
     pdf: UploadFile = File(None),
     db: Session = Depends(get_db),
+    user=Depends(require_role(["admin", "vendor"]))  
 ):
     book = db.query(Book).filter(Book.id == id).first()
 
@@ -103,7 +109,6 @@ def update_book(
     book.price = price
     book.quantity = quantity
 
-    # new added,  uuid folder from  image/pdf
     uuid_folder = None
     if book.image:
         uuid_folder = book.image.split("/")[2]
@@ -116,7 +121,6 @@ def update_book(
     book_dir = BOOKS_DIR / uuid_folder
     book_dir.mkdir(parents=True, exist_ok=True)
 
-    # new added get imge
     if image:
         image_ext = image.filename.split(".")[-1]
         image_name = f"image.{image_ext}"
@@ -127,7 +131,6 @@ def update_book(
 
         book.image = f"uploads/books/{uuid_folder}/{image_name}"
 
-    # get new added  pdf
     if pdf:
         pdf_name = "book.pdf"
         pdf_file_path = book_dir / pdf_name
@@ -142,14 +145,20 @@ def update_book(
     return book
 
 
+
+# delete book admin only
+
 @router.delete("/{id}")
-def delete_book(id: int, db: Session = Depends(get_db)):
+def delete_book(
+    id: int,
+    db: Session = Depends(get_db),
+    user=Depends(require_role(["admin"]))  
+):
     book = db.query(Book).filter(Book.id == id).first()
 
     if not book:
-        raise HTTPException(status_code=404, detail="book not found")
+        raise HTTPException(status_code=404, detail="Book not found")
 
-    
     folder = None
     if book.image:
         folder = BOOKS_DIR / book.image.split("/")[2]
@@ -161,7 +170,9 @@ def delete_book(id: int, db: Session = Depends(get_db)):
 
     db.delete(book)
     db.commit()
-    return {"message": "Book delted successfully"}
+
+    return {"message": "Book deleted successfully"}
+
 
 
 @router.get("/{id}/pdf-generate")

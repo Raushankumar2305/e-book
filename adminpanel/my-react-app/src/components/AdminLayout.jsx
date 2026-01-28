@@ -3,6 +3,8 @@ import Header from "./Header";
 import { Outlet } from "react-router-dom";
 
 export default function AdminLayout() {
+  console.log("AdminLayout rendered");
+
   return (
     <div className="">
     <div className="flex min-h-screen bg-gray-100">

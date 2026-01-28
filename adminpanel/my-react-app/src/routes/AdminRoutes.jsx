@@ -1,25 +1,52 @@
-import { Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import AdminLayout from "../components/AdminLayout";
 import Dashboard from "../components/Dashboard";
 import Books from "../components/Books";
 import Users from "../components/user";
-import PdfViewer from "../components/PdfViewer";
 import PaymentHistory from "../components/PaymentHistory";
+import AddAuthor from "../components/AddAuthor";
 
 export default function AdminRoutes() {
+  const role = localStorage.getItem("role");
+
   return (
-    <Route path="/admin" element={<AdminLayout />}>
+    <Routes>
+      <Route element={<AdminLayout />}>
 
-      <Route index element={<Dashboard />} />
+        {/* Dashboard */}
+        <Route index element={<Dashboard />} />
 
-      <Route path="books" element={<Books />} />
+        {/* Books = admin + vendor */}
+        {(role === "admin" || role === "vendor") && (
+          <Route path="books" element={<Books />} />
+        )}
 
-      <Route path="books/:id/pdf" element={<PdfViewer />} />
+        {/* Users = admin only */}
+        {role === "admin" && (
+          <Route path="users" element={<Users />} />
+        )}
 
-      <Route path="payments" element={<PaymentHistory />} />
+        {/* Payments = admin only */}
+        {role === "admin" && (
+          <Route path="payments" element={<PaymentHistory />} />
+        )}
 
-      <Route path="users" element={<Users />} />
+        {/* fallback */}
+        <Route path="*" element={<Navigate to="/" />} />
 
-    </Route>
+        <Route path="add-author" element={<AddAuthor />} />
+
+
+        {role === "vendor" && (
+          <NavLink to="/admin/add-author" className={linkClass}>
+            Add Author
+          </NavLink>
+        )}
+
+
+
+
+      </Route>
+    </Routes>
   );
 }
