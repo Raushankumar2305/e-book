@@ -18,7 +18,7 @@ const Books = () => {
 
   const [editId, setEditId] = useState(null);
 
-  
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
@@ -38,7 +38,7 @@ const Books = () => {
 
     fetchBooks();
   }, []);
-// get boks
+  // get boks
   const fetchBooks = async () => {
     try {
       const res = await api.get("/books");
@@ -47,8 +47,10 @@ const Books = () => {
       console.error("Fetch books error:", err);
     }
   };
-// save books and add/update ok
+  // save books and add/update ok
   const handleSaveBook = async () => {
+    console.log(" Save clicked");
+
     if (!title || !author || !price || !quantity) {
       alert("All fields required");
       return;
@@ -64,20 +66,35 @@ const Books = () => {
     if (pdf) formData.append("pdf", pdf);
 
     try {
+      console.log(" Sending API request...");
+
+      let res;
+
       if (editId) {
-        await api.put(`/books/${editId}`, formData);
+        console.log(" Updating book:", editId);
+        res = await api.put(`/books/${editId}`, formData);
       } else {
-        await api.post("/books", formData);
+        console.log(" Creating new book");
+        res = await api.post("/books", formData);
       }
+
+      console.log(" Success:", res.data);
 
       closeModal();
       fetchBooks();
+
     } catch (err) {
-      console.error(err);
+      console.error(" API ERROR:", err.response?.data || err.message);
       alert("Failed to save book");
     }
   };
-// edit
+
+
+
+
+
+
+  // edit
   const handleEdit = (book) => {
     setEditId(book.id);
     setTitle(book.title);
@@ -86,7 +103,7 @@ const Books = () => {
     setQuantity(book.quantity);
     setShowModal(true);
   };
-//  delete
+  //  delete
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this book?")) return;
 
@@ -121,7 +138,11 @@ const Books = () => {
         <h1 className="text-2xl font-semibold">Books</h1>
 
         <button
-          onClick={() => setShowModal(true)}
+
+          onClick={() => {
+            console.log("ADD BUTTON CLICKED");
+            setShowModal(true)
+          }}
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-800"
         >
           + Add Book
@@ -203,6 +224,75 @@ const Books = () => {
           </tbody>
         </table>
       </div>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded w-96 space-y-3">
+
+            <h2 className="text-lg font-semibold">
+              {editId ? "Edit Book" : "Add Book"}
+            </h2>
+
+            <input
+              className="w-full border p-2"
+              placeholder="Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+
+            <input
+              className="w-full border p-2"
+              placeholder="Author"
+              value={author}
+              onChange={(e) => setAuthor(e.target.value)}
+            />
+
+            <input
+              className="w-full border p-2"
+              placeholder="Price"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+
+            <input
+              className="w-full border p-2"
+              placeholder="Quantity"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+            />
+
+            <input
+            className="w-full border p-2"
+            placeholder="select image"
+            value={image}
+            type="file" onChange={(e) => setImage(e.target.files[0])}
+             />
+
+            <input 
+             className="w-full border p-2"
+            placeholder="select pdf file"
+            value={pdf}                      
+            type="file" onChange={(e) => setPdf(e.target.files[0])} 
+            />
+
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={closeModal}
+                className="bg-gray-400 px-3 py-1 rounded"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleSaveBook}
+                className="bg-green-600 text-white px-3 py-1 rounded"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {previewImage && (
         <div

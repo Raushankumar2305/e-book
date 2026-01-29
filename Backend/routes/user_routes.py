@@ -137,6 +137,62 @@ def otp_verify(data: OTPVerify, db: Session = Depends(get_db)):
     }
 
 
+'''@router.post("/otp-verify")
+def otp_verify(data: OTPVerify, db: Session = Depends(get_db)):
+
+    user = db.query(User).filter(User.email == data.email).first()
+
+    if not user or user.otp != data.otp:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+
+    if user.otp_expiry < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="OTP expired")
+
+    user.is_verified = True
+    user.otp = None
+    user.otp_expiry = None
+
+    # ✅ include role inside token
+    token = create_token({
+        "user_id": user.id,
+        "role": user.role
+    })
+
+    db.commit()
+
+    # ✅ return real role
+    return {
+        "message": "OTP verified successfully",
+        "access_token": token,
+        "role": user.role
+    }'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # RESEND OTP
 
@@ -167,7 +223,7 @@ def resend_otp(data: OTPVerify, db: Session = Depends(get_db)):
 def create_user(
     user: UserCreate,
     db: Session = Depends(get_db),
-    admin=Depends(require_role(["admin"]))   #  PROTECTED
+    admin=Depends(require_role(["admin"]))   
 ):
 
     if db.query(User).filter(User.email == user.email).first():
@@ -177,7 +233,7 @@ def create_user(
         name=user.name,
         email=user.email,
         password=hash_password(user.password),
-        role=user.role or "user",   # admin can set role
+        role=user.role or "user",   
         is_verified=True
     )
 
@@ -202,7 +258,7 @@ def get_users(
     db: Session = Depends(get_db),
     admin=Depends(require_role(["admin"]))
 ):
-    print("\n==========  GET ALL USERS (ADMIN) ==========")
+    print("\n  get all users")
 
     # Step 1 request ok
     print(" Request received")

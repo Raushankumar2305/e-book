@@ -14,7 +14,7 @@ const OtpVerify = () => {
 
   const inputsRef = useRef([]);
 
-//   timer
+  
   useEffect(() => {
     if (timer === 0) return;
 
@@ -38,36 +38,58 @@ const OtpVerify = () => {
     }
   };
 
-  /* verify otp */
-  const handleVerify = async () => {
-    const otpValue = otp.join("");
+//   OtpVerify
+  
 
-    if (!email) return alert("Enter email");
-    if (otpValue.length !== 6) return alert("Enter 6 digit OTP");
 
-    try {
-      setLoading(true);
+const handleVerify = async () => {
+  const otpValue = otp.join("");
 
-      const res = await axios.post(`${API}/otp-verify`, {
-        email,
-        otp: otpValue,
-      });
+  if (!email) return alert("Enter email");
+  if (otpValue.length !== 6) return alert("Enter 6 digit OTP");
 
-      const { access_token, role } = res.data;
+  try {
+    setLoading(true);
 
-      /* token store
-      */
-      window.location.href =
-        `http://localhost:5174/admin?token=${access_token}&role=${role}`;
+    const res = await axios.post(`${API}/otp-verify`, {
+      email,
+      otp: otpValue,
+    });
 
-    } catch (err) {
-      alert(err.response?.data?.detail || "Invalid or expired OTP");
-    } finally {
-      setLoading(false);
-    }
-  };
+    const { access_token, role } = res.data;
 
-  /* resend otp*/
+    console.log("Backend role:", role);
+
+    
+    localStorage.clear();
+
+    // save auth
+    localStorage.setItem("token", access_token);
+    localStorage.setItem("role", role);
+
+    
+    const roleRoutes = {
+      admin: "http://localhost:5174/admin",
+      vendor: "http://localhost:5174/admin",
+      author: "/",
+      user: "/",
+    };
+
+    navigate(roleRoutes[role?.toLowerCase()] || "/");
+
+  } catch (err) {
+    alert(err.response?.data?.detail || "Invalid or expired OTP");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+
+
+
+  
   const handleResend = async () => {
     if (timer > 0) return;
 
@@ -95,7 +117,6 @@ const OtpVerify = () => {
           OTP Verification
         </h2>
 
-        {/* EMAIL */}
         <input
           type="email"
           placeholder="Enter your email"
@@ -104,7 +125,6 @@ const OtpVerify = () => {
           className="w-full mb-6 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
         />
 
-        {/* OTP BOXES */}
         <div className="flex justify-between mb-6">
           {otp.map((digit, i) => (
             <input
@@ -119,7 +139,6 @@ const OtpVerify = () => {
           ))}
         </div>
 
-        {/* TIMER */}
         <div className="text-center mb-6 text-sm">
           {timer > 0 ? (
             <p className="text-gray-500">
@@ -135,7 +154,6 @@ const OtpVerify = () => {
           )}
         </div>
 
-        {/* VERIFY BUTTON */}
         <button
           onClick={handleVerify}
           disabled={loading}
