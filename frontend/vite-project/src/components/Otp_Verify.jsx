@@ -75,7 +75,11 @@ const handleVerify = async () => {
       user: "/",
     };
 
-    navigate(roleRoutes[role?.toLowerCase()] || "/");
+    // navigate(roleRoutes[role?.toLowerCase()] || "/");
+
+    window.location.href =
+  `http://localhost:5174/admin?token=${access_token}&role=${role}`;
+
 
   } catch (err) {
     alert(err.response?.data?.detail || "Invalid or expired OTP");
@@ -87,9 +91,6 @@ const handleVerify = async () => {
 
 
 
-
-
-  
   const handleResend = async () => {
     if (timer > 0) return;
 

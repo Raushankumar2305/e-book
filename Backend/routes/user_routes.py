@@ -5,7 +5,7 @@ from datetime import datetime
 
 from models.books import Book
 from fastapi import Form
-
+from auth import require_role  
 
 
 from auth import hash_password, verify_password
@@ -14,6 +14,7 @@ from otp import generate_otp, otp_expiry_time, create_token
 from database import get_db
 from models.user import User
 from Schema.user import (
+    AddAuthorSchema,
     RegisterSchema,
     LoginSchema,
     OTPVerify,
@@ -21,7 +22,7 @@ from Schema.user import (
     UserResponse,
 )
 
-from auth import require_role   
+ 
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -103,8 +104,6 @@ def login(data: LoginSchema, db: Session = Depends(get_db)):
     }
 
 
-
-
 # OTP VERIFY 
 
 @router.post("/otp-verify")
@@ -166,32 +165,6 @@ def otp_verify(data: OTPVerify, db: Session = Depends(get_db)):
         "access_token": token,
         "role": user.role
     }'''
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # RESEND OTP
@@ -289,8 +262,6 @@ def get_users(
         raise HTTPException(status_code=500, detail="Database error")
 
 
-
-
 @router.put("/users/{id}", response_model=UserResponse)
 def update_user(
     id: int,
@@ -317,8 +288,7 @@ def update_user(
     return db_user
 
 
-
-@router.delete("/users/{id}")
+'''@router.delete("/users/{id}")
 def delete_user(
     id: int,
     db: Session = Depends(get_db),
@@ -333,29 +303,20 @@ def delete_user(
     db.delete(db_user)
     db.commit()
 
-    return {"message": "User deleted successfully"}
+    return {"message": "User deleted successfully"}'''
 
 
-
-
-
-# vendor apis
 
 @router.post("/vendor/add-author")
 def vendor_add_author(
-    name: str,
-    email: str,
-    password: str,
+    data: AddAuthorSchema,
     db: Session = Depends(get_db),
     vendor=Depends(require_role(["vendor"]))
 ):
-    if db.query(User).filter(User.email == email).first():
-        raise HTTPException(400, "Email already exists")
-
     new_author = User(
-        name=name,
-        email=email,
-        password=hash_password(password),
+        name=data.name,
+        email=data.email,
+        password=hash_password(data.password),
         role="author",
         is_verified=True
     )

@@ -7,14 +7,25 @@ export default function AddAuthor() {
   const [password, setPassword] = useState("");
 
   const handleAdd = async () => {
-    await api.post("/auth/vendor/add-author", {
+  try {
+    console.log("Sending request...");
+     console.log("token:", localStorage.getItem("token"));
+
+    const res = await api.post("/auth/vendor/add-author", {
       name,
       email,
       password,
     });
 
-    alert("Author added!");
-  };
+    console.log("Success:", res.data);
+
+    alert("Author added successfully");
+
+  } catch (err) {
+    console.error("ERROR:", err.response?.data || err.message);
+    alert("Failed to add author");
+  }
+};
 
   return (
     <div className="p-6 space-y-4">

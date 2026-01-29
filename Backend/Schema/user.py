@@ -36,3 +36,7 @@ class OTPVerify(BaseModel):
 class ResendOTP(BaseModel):
     email: EmailStr
 
+class AddAuthorSchema(BaseModel):
+    name: str
+    email: str
+    password: str

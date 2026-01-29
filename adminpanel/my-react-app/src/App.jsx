@@ -9,15 +9,20 @@ function TokenHandler() {
     const token = params.get("token");
     const role = params.get("role");
 
+   
+    if (token && role) {
+      
+      localStorage.clear();
 
-    if (token) {
+     
       localStorage.setItem("token", token);
-    }
-
-    if (role) {
       localStorage.setItem("role", role);
+
+      
+      window.history.replaceState({}, "", "/admin");
     }
-  }, [params]);
+  }, []);
+  
 
   return <AdminRoutes />;
 }

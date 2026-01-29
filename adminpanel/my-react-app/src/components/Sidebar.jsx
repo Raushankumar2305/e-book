@@ -36,6 +36,11 @@ export default function Sidebar() {
             Payment History
           </NavLink>
         </div>
+         <div className="text-black bg-amber-50">
+          <NavLink to="add-author" className={linkClass}>
+            Add Author
+          </NavLink>
+        </div>
 
       </div>
     </div>
