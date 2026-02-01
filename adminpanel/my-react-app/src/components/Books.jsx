@@ -262,18 +262,19 @@ const Books = () => {
             />
 
             <input
-            className="w-full border p-2"
-            placeholder="select image"
-            value={image}
-            type="file" onChange={(e) => setImage(e.target.files[0])}
-             />
-
-            <input 
-             className="w-full border p-2"
-            placeholder="select pdf file"
-            value={pdf}                      
-            type="file" onChange={(e) => setPdf(e.target.files[0])} 
+              className="w-full border p-2"
+              type="file"
+              accept="image/*"
+              onChange={(e) => setImage(e.target.files[0])}
             />
+
+            <input
+              className="w-full border p-2"
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => setPdf(e.target.files[0])}
+            />
+
 
             <div className="flex justify-end gap-2">
               <button
