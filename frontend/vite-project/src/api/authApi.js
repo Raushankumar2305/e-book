@@ -1,22 +1,17 @@
 import axios from "axios";
 
-import api from "./api"; 
+const api = axios.create({
+  baseURL: "http://127.0.0.1:8000",
+});
 
-const API = "http://127.0.0.1:8000";
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
 
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
 
+  return config;
+});
 
-
-  // adjust path if needed
-
-export const registerUser = (data) =>
-  api.post("/auth/register", data);
-
-export const loginUser = (data) =>
-  api.post("/auth/login", data);
-
-export const verifyOtp = (data) =>
-  api.post("/auth/otp-verify", data);
-
-export const resendOtp = (data) =>
-  api.post("/auth/resend-otp", data);
+export default api;   

@@ -36,11 +36,26 @@ const PaymentPage = () => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              ...response,
+              response,
               user_id: 1,
               amount,
             }),
           });
+
+         
+
+          const token = localStorage.getItem("token");
+
+          for (const item of cartItems) {
+            await fetch(`http://localhost:8000/purchase/${item.id}`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+          }
+
+          
 
           clearCart();
           navigate("/success");
@@ -58,26 +73,18 @@ const PaymentPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-
-      
       <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl p-8">
-
-        
         <h2 className="text-3xl font-bold text-center mb-8">
           Checkout
         </h2>
 
-       
         <div className="space-y-4 max-h-72 overflow-y-auto mb-6">
-
           {cartItems.map((item) => (
             <div
               key={item.id}
               className="flex items-center justify-between border-b pb-4"
             >
               <div className="flex items-center gap-4">
-
-              
                 {item.image ? (
                   <img
                     src={item.image}
@@ -88,22 +95,18 @@ const PaymentPage = () => {
                   <div className="w-14 h-20 bg-gray-200 rounded-lg" />
                 )}
 
-             
                 <div>
                   <p className="font-medium">{item.title}</p>
                   <p className="text-xs text-gray-500">Book</p>
                 </div>
               </div>
 
-              
               <p className="font-semibold text-orange-600">
                 ₹{item.price}
               </p>
             </div>
           ))}
-
         </div>
-
 
         <div className="border-t pt-5 mb-8 flex justify-between items-center">
           <span className="text-lg font-semibold">Total Amount</span>
@@ -112,7 +115,6 @@ const PaymentPage = () => {
           </span>
         </div>
 
-        
         <button
           onClick={handlePayment}
           className="w-full bg-green-600 hover:bg-green-800 text-white py-4 rounded-2xl text-lg font-semibold transition shadow-md hover:shadow-lg"
@@ -120,9 +122,8 @@ const PaymentPage = () => {
           Pay Securely with Razorpay →
         </button>
 
-        {/* footer part */}
         <p className="text-center text-xs text-gray-400 mt-5">
-           100% Secure Payment • Powered by Razorpay
+          100% Secure Payment • Powered by Razorpay
         </p>
 
         <button

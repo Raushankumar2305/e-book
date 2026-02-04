@@ -40,8 +40,6 @@ const OtpVerify = () => {
 
 //   OtpVerify
   
-
-
 const handleVerify = async () => {
   const otpValue = otp.join("");
 
@@ -60,26 +58,23 @@ const handleVerify = async () => {
 
     console.log("Backend role:", role);
 
-    
+    // clear old
     localStorage.clear();
 
-    // save auth
+    // save new auth
     localStorage.setItem("token", access_token);
     localStorage.setItem("role", role);
 
-    
+    // role based routes
     const roleRoutes = {
       admin: "http://localhost:5174/admin",
       vendor: "http://localhost:5174/admin",
-      author: "/",
-      user: "/",
+      author: "http://localhost:5174/admin",
+      user: "http://localhost:5173/homepage",
     };
 
-    // navigate(roleRoutes[role?.toLowerCase()] || "/");
-
-    window.location.href =
-  `http://localhost:5174/admin?token=${access_token}&role=${role}`;
-
+    // ✅ dynamic redirect
+    window.location.href = roleRoutes[role?.toLowerCase()] || "/";
 
   } catch (err) {
     alert(err.response?.data?.detail || "Invalid or expired OTP");
@@ -87,6 +82,19 @@ const handleVerify = async () => {
     setLoading(false);
   }
 };
+
+    // navigate(roleRoutes[role?.toLowerCase()] || "/");
+
+//     window.location.href =
+//   `http://localhost:5174/admin?token=${access_token}&role=${role}`;
+
+
+//   } catch (err) {
+//     alert(err.response?.data?.detail || "Invalid or expired OTP");
+//   } finally {
+//     setLoading(false);
+//   }
+// };
 
 
 

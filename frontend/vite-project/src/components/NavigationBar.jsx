@@ -5,7 +5,7 @@ import { FiUser, FiShoppingCart, FiHeart } from "react-icons/fi";
 import { FaInstagram } from "react-icons/fa";
 import HamburgerMenu from "./HamburgerMenu";
 import { BiLogIn } from "react-icons/bi";
-
+import MyPurchases from "./MyPurchases";
 
 // new add
 import { Link } from "react-router-dom";
@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 const NavigationBar = () => {
   return (
     <header className="w-full relative z-40">
+     
 
       {/* top bar */}
       <div className="bg-[#393280] text-white">
@@ -106,6 +107,11 @@ const NavigationBar = () => {
 
           <div className="hover:text-[#ED553B] text-black">
             <Link to="/blog">BLOG    </Link>
+          </div>
+           <MyPurchases />
+
+            <div className="hover:text-[#ED553B] text-black">
+            <Link to="/my-books">  MyPurchases  </Link>
           </div>
         </ul>
       </nav>

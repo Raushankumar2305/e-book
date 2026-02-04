@@ -13,6 +13,7 @@ import { CartProvider } from "./components/CartContext";
 import Aboutus from "./components/Aboutus";
 import Contactus from "./components/Contactus";
 import Blog from "./components/Blog";
+import MyPurchases from "./components/MyPurchases";
 
 
 
@@ -40,6 +41,7 @@ function App() {
       <Route path="/books/:id" element={<BookDetails />} />
       <Route path="/cart" element={<CartPage />} />
       <Route path="/payment" element={<PaymentPage />} />
+       <Route path="/my-books" element={<MyPurchases />} />
     </Routes>
 
     </CartProvider>
