@@ -5,7 +5,7 @@ const PaymentHistory = () => {
   const [payments, setPayments] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:8000/payment/history")
+    fetch(import.meta.env.VITE_API_BASE_URL + "/payment/history")
       .then(res => res.json())
       .then(data => setPayments(data))
       .catch(err => console.error(err));

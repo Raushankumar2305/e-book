@@ -15,7 +15,7 @@ const PaymentPage = () => {
         return;
       }
 
-      const res = await fetch("http://localhost:8000/payment/create-order", {
+      const res = await fetch(import.meta.env.VITE_API_BASE_URL + "/payment/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount }),
@@ -32,7 +32,7 @@ const PaymentPage = () => {
         order_id: order.id,
 
         handler: async function (response) {
-          await fetch("http://localhost:8000/payment/verify-payment", {
+          await fetch(import.meta.env.VITE_API_BASE_URL + "/payment/verify-payment", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -47,7 +47,7 @@ const PaymentPage = () => {
           const token = localStorage.getItem("token");
 
           for (const item of cartItems) {
-            await fetch(`http://localhost:8000/purchase/${item.id}`, {
+            await fetch(import.meta.env.VITE_API_BASE_URL + `/purchase/${item.id}`, {
               method: "POST",
               headers: {
                 Authorization: `Bearer ${token}`,

@@ -25,7 +25,7 @@ const BooksPage = () => {
 
     const fetchBooks = async () => {
         try {
-            const res = await axios.get("http://localhost:8000/books");
+            const res = await axios.get(import.meta.env.VITE_API_BASE_URL + "/books");
             setBooks(res.data);
         } catch (error) {
             console.error("Error fetching books:", error);
@@ -39,7 +39,7 @@ const BooksPage = () => {
             const token = localStorage.getItem("token");
 
             const res = await axios.get(
-                "http://localhost:8000/purchase/my-books",
+                import.meta.env.VITE_API_BASE_URL + "/purchase/my-books",
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }
@@ -58,7 +58,7 @@ const BooksPage = () => {
             const token = localStorage.getItem("token");
 
             await axios.post(
-                `http://localhost:8000/purchase/${bookId}`,
+                import.meta.env.VITE_API_BASE_URL + `/purchase/${bookId}`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -137,7 +137,7 @@ const BooksPage = () => {
                                         price={book.price}
                                         image={
                                             book.image
-                                                ? `http://localhost:8000/public/${book.image}`
+                                                ? `${import.meta.env.BackendAPI}/public/${book.image}`
                                                 : "/placeholder.png"
                                         }
                                     />

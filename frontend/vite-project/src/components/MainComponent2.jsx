@@ -77,7 +77,7 @@ const [books, setBooks] = useState([]);
 
   const fetchBooks = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/books");
+      const res = await axios.get(import.meta.env.VITE_API_BASE_URL + "/books");
       setBooks(res.data);
     } catch (error) {
       console.error("Error fetching books", error);
@@ -218,7 +218,7 @@ const [books, setBooks] = useState([]);
             <Herosectioncard2copy
               image={
                 book.image
-                  ? `http://localhost:8000/public/${book.image}`
+                  ? `${import.meta.env.VITE_API_BASE_URL}/public/${book.image}`
                   : "/placeholder.png"
               }
               title={book.title}
