@@ -8,7 +8,6 @@ class CreateOrderRequest(BaseModel):
 
 
 class PaymentCreate(BaseModel):
-    user_id: int
     amount: int
     currency: str = "INR"
 
@@ -18,7 +17,6 @@ class PaymentVerify(BaseModel):
     razorpay_order_id: str
     razorpay_payment_id: str
     razorpay_signature: str
-    user_id: int
     amount: int
 
 

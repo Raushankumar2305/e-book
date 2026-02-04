@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 # from routes.dashboard_routes import router as dashboard_router
+from routes.purchase_routes import router as purchase_router
 
 
 from dotenv import load_dotenv
@@ -59,6 +60,7 @@ app.mount("/public", StaticFiles(directory=PUBLIC_DIR), name="public")
 app.include_router(router)
 app.include_router(books_router)
 app.include_router(payment_router)
+app.include_router(purchase_router)
 # app.include_router(dashboard_router)
 
 @app.get("/")

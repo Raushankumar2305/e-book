@@ -30,6 +30,8 @@ export default function AdminRoutes() {
         <Route path="add-author" element={<AddAuthor />} />
 
         <Route path="*" element={<Navigate to="/" />} />
+       
+
 
       </Route>
     </Routes>

@@ -136,6 +136,9 @@ def otp_verify(data: OTPVerify, db: Session = Depends(get_db)):
     }
 
 
+
+
+
 '''@router.post("/otp-verify")
 def otp_verify(data: OTPVerify, db: Session = Depends(get_db)):
 
