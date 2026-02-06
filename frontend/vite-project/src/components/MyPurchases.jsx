@@ -63,7 +63,7 @@ export default function MyPurchases() {
       {loading && <p>Loading purchases...</p>}
 
       {!loading && books.length === 0 && (
-        <p className="text-gray-500">No purchased books yet</p>
+        <p className="text-green-500">No purchased books yet</p>
       )}
 
       {books.map((b) => (
