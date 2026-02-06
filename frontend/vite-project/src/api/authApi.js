@@ -1,8 +1,12 @@
 import axios from "axios";
 
-
+/*
+  -----------------------------------------
+  Base URL from Vite ENV
+  -----------------------------------------
+  Access using: import.meta.env
+*/
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
 
 const api = axios.create({
   baseURL: BASE_URL,
